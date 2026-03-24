@@ -1,50 +1,67 @@
+// app/dashboard/actions.ts
 'use server'
-
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import * as cheerio from 'cheerio'
 
-export async function addGrain(formData: FormData) {
-  const url = formData.get('url') as string
-  if (!url) return
+export async function createCategory(formData: FormData) {
+  const name = formData.get('name') as string;
+  if (!name) return;
 
-  const supabase = await createClient()
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  await supabase.from('categories').insert({ user_id: user.id, name });
+  revalidatePath('/dashboard');
+}
+
+// app/dashboard/actions.ts
+export async function updateGrainCategory(grainId: string, categoryId: string | null) {
+  const supabase = await createClient();
   
-  // 1. Verify user
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Unauthorized")
+  const { error } = await supabase
+    .from('grains')
+    .update({ category_id: categoryId })
+    .eq('id', grainId);
+
+  if (error) {
+    console.error("Failed to move grain:", error.message);
+  }
+  
+  revalidatePath('/dashboard');
+}
+
+export async function addGrain(formData: FormData) {
+  const url = formData.get('url') as string;
+  const categoryId = formData.get('category_id') as string; // NEW
+  if (!url) return;
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
 
   try {
-    // 2. Fetch the target URL
-    const response = await fetch(url)
-    const html = await response.text()
-    
-    // 3. Load HTML into Cheerio to parse it
-    const $ = cheerio.load(html)
+    const response = await fetch(url);
+    const html = await response.text();
+    const $ = cheerio.load(html);
 
-    // 4. Extract Metadata (Title, Description, Image)
-    const title = $('title').text() || $('meta[property="og:title"]').attr('content') || url
-    const description = $('meta[name="description"]').attr('content') || $('meta[property="og:description"]').attr('content') || 'No description available.'
-    const imageUrl = $('meta[property="og:image"]').attr('content') || null
+    const title = $('title').text() || url;
+    const description = $('meta[name="description"]').attr('content') || 'No description';
+    const imageUrl = $('meta[property="og:image"]').attr('content') || null;
 
-    // 5. Save to Supabase (Defaults scroll_pos to 0)
-    const { error } = await supabase.from('grains').insert({
+    await supabase.from('grains').insert({
       user_id: user.id,
-      url: url,
-      title: title,
-      summary: description, // Using description as a temporary summary
+      url,
+      title,
+      summary: description,
       scroll_pos: 0, 
-      image_url: imageUrl
-    })
-
-    if (error) {
-      console.error("Database error:", error.message)
-    }
+      image_url: imageUrl,
+      category_id: categoryId === 'uncategorized' ? null : categoryId // NEW
+    });
 
   } catch (error) {
-    console.error("Scraping failed. The website might be blocking fetch requests:", error)
+    console.error("Scraping failed:", error);
   }
-
-  // 6. Refresh the dashboard instantly to show the new Grain!
-  revalidatePath('/dashboard')
+  revalidatePath('/dashboard');
 }

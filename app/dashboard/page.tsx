@@ -1,122 +1,82 @@
+// app/dashboard/page.tsx
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { addGrain, createCategory } from "./actions";
 import { Button } from "@/components/ui/button";
-import { addGrain } from "./actions";
 import { Input } from "@/components/ui/input";
+import Board from "./board";
 
-export default async function ProfileDashboard() {
+export default async function Dashboard() {
   const supabase = await createClient();
-
-  // 1. Authenticate the user securely on the server
   const {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
 
-  if (authError || !user) {
-    redirect("/login");
-  }
+  if (authError || !user) redirect("/login");
 
-  // 2. Fetch the user's grains (RLS protects this automatically)
-  const { data: grains, error: grainsError } = await supabase
-    .from("grains")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (grainsError) {
-    return (
-      <div className="p-8 text-red-500">
-        Failed to load your knowledge repository.
-      </div>
-    );
-  }
+  // Fetch Grains AND Categories in parallel
+  const [{ data: grains }, { data: categories }] = await Promise.all([
+    supabase
+      .from("grains")
+      .select("*")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("categories")
+      .select("*")
+      .order("created_at", { ascending: true }),
+  ]);
 
   return (
-    <div className="max-w-5xl mx-auto p-8">
-      {/* Header Section */}
-      <div className="flex justify-between items-center mb-10 pb-4 border-b">
-        <div>
-          <h1 className="text-4xl font-extrabold tracking-tight">My Grains</h1>
-          <p className="text-muted-foreground mt-2">
-            Logged in as {user.email}
-          </p>
+    <div className="max-w-7xl mx-auto p-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Grains</h1>
+        <form action="/login">
+          <Button variant="outline">Log Out</Button>
+        </form>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+        {/* Create Category Form */}
+        <div className="p-6 border rounded-xl bg-card">
+          <h2 className="font-semibold mb-4">1. Create a Category</h2>
+          <form action={createCategory} className="flex gap-4">
+            <Input name="name" placeholder="e.g., Next.js Tutorials" required />
+            <Button type="submit" variant="secondary">
+              Add
+            </Button>
+          </form>
         </div>
-        <form action="/auth/signout" method="post">
-          <Button variant="outline" type="submit">
-            Log Out
-          </Button>
-        </form>
-      </div>
-      {/* Manual Entry Mockup */}
-      <div className="mb-10 p-6 bg-card border rounded-xl shadow-sm">
-        <h2 className="text-lg font-semibold mb-2">Save a new Link</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          Paste a URL below to scrape its metadata. (This simulates the future
-          Chrome Extension).
-        </p>
-        <form action={addGrain} className="flex gap-4">
-          <Input
-            name="url"
-            type="url"
-            placeholder="https://en.wikipedia.org/wiki/Next.js"
-            required
-            className="flex-1"
-          />
-          <Button type="submit">Capture Grain</Button>
-        </form>
-      </div>
 
-      {/* Grains Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {grains?.length === 0 ? (
-          <p className="text-muted-foreground col-span-full text-center py-10">
-            Your digital graveyard is empty! Start saving active knowledge.
-          </p>
-        ) : (
-          grains?.map((grain) => (
-            <Card
-              key={grain.id}
-              className="flex flex-col hover:shadow-lg transition-shadow"
+        {/* Create Grain Form (Now with dropdown!) */}
+        <div className="p-6 border rounded-xl bg-card">
+          <h2 className="font-semibold mb-4">2. Save a Link</h2>
+          <form action={addGrain} className="flex gap-2">
+            <Input
+              name="url"
+              type="url"
+              placeholder="https://..."
+              required
+              className="flex-1"
+            />
+            <select
+              name="category_id"
+              className="border rounded-md px-3 text-sm bg-background"
             >
-              <CardHeader>
-                <CardTitle className="text-lg line-clamp-1">
-                  <a
-                    href={grain.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline text-primary"
-                  >
-                    {new URL(grain.url).hostname}
-                  </a>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                  {grain.summary}
-                </p>
-
-                {/* Scroll Position / Context Persistence */}
-                <div className="mt-auto">
-                  <div className="flex justify-between text-xs font-medium mb-1">
-                    <span>Reading progress</span>
-                    <span>{grain.scroll_pos}%</span>
-                  </div>
-                  <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
-                    <div
-                      className="bg-primary h-full rounded-full"
-                      style={{ width: `${grain.scroll_pos}%` }}
-                    />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-3 text-right">
-                    Saved {new Date(grain.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
+              <option value="uncategorized">Uncategorized</option>
+              {categories?.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+            <Button type="submit">Save</Button>
+          </form>
+        </div>
       </div>
+
+      {/* The Drag and Drop Board */}
+      <Board grains={grains || []} categories={categories || []} />
     </div>
   );
 }

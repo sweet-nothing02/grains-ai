@@ -33,7 +33,5 @@ export async function signup(formData: FormData) {
         redirect('/login?error=Could not create user')
     }
   
-  // Usually, Supabase sends a confirmation email. 
-  // You can disable this in Supabase Dashboard > Auth > Providers > Email
   redirect('/dashboard')
 }
