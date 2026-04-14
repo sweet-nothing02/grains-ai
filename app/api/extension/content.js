@@ -55,3 +55,55 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 } else {
   window.addEventListener('DOMContentLoaded', restoreScroll);
 }
+
+// --- AUTO-SAVE PROGRESS FEATURE ---
+
+const API_PATCH_URL = 'http://localhost:3000/api/extension';
+const urlParams = new URLSearchParams(window.location.search);
+const activeGrainId = urlParams.get('g_id');
+
+if (activeGrainId) {
+  console.log(`[Grains] Auto-save active for Grain ID: ${activeGrainId}`);
+  let saveTimeout;
+
+  // Helper to calculate current % and send to server
+  // Helper to calculate current % and send to server via Background Script
+  const saveProgress = () => {
+    const scrollHeight = Math.max(
+      document.body.scrollHeight, document.documentElement.scrollHeight,
+      document.body.offsetHeight, document.documentElement.offsetHeight,
+      document.body.clientHeight, document.documentElement.clientHeight
+    ) - window.innerHeight;
+
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const scrollPercent = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0;
+
+    // Send the data to our privileged background script instead of fetching directly
+    chrome.runtime.sendMessage({
+      action: 'autoSaveScroll',
+      payload: {
+        grain_id: activeGrainId,
+        scroll_pos: scrollPercent
+      }
+    }, (response) => {
+      if (response && response.success) {
+        console.log(`[Grains] Auto-saved progress: ${scrollPercent}%`);
+      } else {
+        console.error("[Grains] Auto-save failed via background", response?.error);
+      }
+    });
+  };
+
+  // Trigger 1: Debounced Scrolling (Waits until user stops scrolling for 2 seconds)
+  window.addEventListener('scroll', () => {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(saveProgress, 2000);
+  });
+
+  // Trigger 2: Tab Closed or Switched
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      saveProgress();
+    }
+  });
+}

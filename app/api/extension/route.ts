@@ -58,3 +58,29 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to save grain" }, { status: 500 });
   }
 }
+
+// PATCH: The extension calls this to silently update the scroll position
+export async function PATCH(req: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const { grain_id, scroll_pos } = await req.json();
+
+    if (!grain_id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
+
+    const { error } = await supabase
+      .from('grains')
+      .update({ scroll_pos })
+      .eq('id', grain_id)
+      .eq('user_id', user.id); // Extra security check
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to update" }, { status: 500 });
+  }
+}

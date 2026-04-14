@@ -32,14 +32,19 @@ export default function Board({
     e.preventDefault();
   };
 
-  // Helper to safely inject the query parameter into any complex URL
-  const getScrollUrl = (originalUrl: string, scrollPos: number) => {
+  // Helper to safely inject query parameters
+  const getScrollUrl = (
+    originalUrl: string,
+    scrollPos: number,
+    grainId: string,
+  ) => {
     try {
       const urlObj = new URL(originalUrl);
       urlObj.searchParams.set("g_scroll", scrollPos.toString());
+      urlObj.searchParams.set("g_id", grainId); // Pass the ID!
       return urlObj.toString();
     } catch (e) {
-      return originalUrl; // Fallback just in case
+      return originalUrl;
     }
   };
 
@@ -88,7 +93,11 @@ export default function Board({
                     <CardTitle className="text-sm line-clamp-2">
                       {/* We check if the URL already has parameters (?) so we safely append with & or ? */}
                       <a
-                        href={getScrollUrl(grain.url, grain.scroll_pos)}
+                        href={getScrollUrl(
+                          grain.url,
+                          grain.scroll_pos,
+                          grain.id,
+                        )}
                         target="_blank"
                         className="hover:underline"
                       >
