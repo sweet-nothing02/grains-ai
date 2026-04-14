@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Grains Collector",
+  "version": "1.0",
+  "description": "Capture active knowledge for your Grains repository.",
+  "permissions": ["activeTab"],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

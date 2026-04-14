@@ -37,7 +37,6 @@ export default function LoginPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" name="password" type="password" required />
             </div>
-            {/* We use formAction to call the Server Action we wrote earlier */}
             <Button formAction={login} className="w-full">
               Login
             </Button>

@@ -1,4 +1,3 @@
-// app/dashboard/actions.ts
 'use server'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -16,7 +15,6 @@ export async function createCategory(formData: FormData) {
   revalidatePath('/dashboard');
 }
 
-// app/dashboard/actions.ts
 export async function updateGrainCategory(grainId: string, categoryId: string | null) {
   const supabase = await createClient();
   
