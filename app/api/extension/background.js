@@ -3,17 +3,22 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'autoSaveScroll') {
     
-    // The background script has permission to fetch localhost!
     fetch('http://localhost:3000/api/extension', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // <-- THIS IS THE MAGIC KEY FOR COOKIES
       body: JSON.stringify(request.payload)
     })
-    .then(res => res.json())
-    .then(data => sendResponse({ success: true, data }))
-    .catch(err => sendResponse({ success: false, error: err.message }));
+    .then(async (res) => {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'API rejected request');
+      sendResponse({ success: true, data });
+    })
+    .catch(err => {
+      console.error("[Grains Background] Patch Error:", err);
+      sendResponse({ success: false, error: err.message });
+    });
 
-    // Return true to keep the message channel open for the async fetch
     return true; 
   }
 });

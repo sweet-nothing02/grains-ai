@@ -68,6 +68,7 @@ if (activeGrainId) {
 
   // Helper to calculate current % and send to server
   // Helper to calculate current % and send to server via Background Script
+  // Helper to calculate current % and send to server via Background Script
   const saveProgress = () => {
     const scrollHeight = Math.max(
       document.body.scrollHeight, document.documentElement.scrollHeight,
@@ -78,20 +79,31 @@ if (activeGrainId) {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     const scrollPercent = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0;
 
-    // Send the data to our privileged background script instead of fetching directly
-    chrome.runtime.sendMessage({
-      action: 'autoSaveScroll',
-      payload: {
-        grain_id: activeGrainId,
-        scroll_pos: scrollPercent
-      }
-    }, (response) => {
-      if (response && response.success) {
-        console.log(`[Grains] Auto-saved progress: ${scrollPercent}%`);
-      } else {
-        console.error("[Grains] Auto-save failed via background", response?.error);
-      }
-    });
+    // Wrap the message in a try/catch to handle reloaded extensions gracefully
+    try {
+      chrome.runtime.sendMessage({
+        action: 'autoSaveScroll',
+        payload: {
+          grain_id: activeGrainId,
+          scroll_pos: scrollPercent
+        }
+      }, (response) => {
+        // Also check lastError to prevent Chrome from complaining
+        if (chrome.runtime.lastError) {
+          console.warn("[Grains] Auto-save skipped: Extension updated. Please refresh the page.");
+          return;
+        }
+
+        if (response && response.success) {
+          console.log(`[Grains] Auto-saved progress: ${scrollPercent}%`);
+        } else {
+          console.error("[Grains] Auto-save failed via background", response?.error);
+        }
+      });
+    } catch (error) {
+      // This catches the specific "Extension context invalidated" error
+      console.warn("[Grains] Extension context invalidated. Please refresh the page.");
+    }
   };
 
   // Trigger 1: Debounced Scrolling (Waits until user stops scrolling for 2 seconds)

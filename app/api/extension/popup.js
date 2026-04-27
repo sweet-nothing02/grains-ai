@@ -43,17 +43,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       // Ask the content script for the scroll position
       chrome.tabs.sendMessage(currentTab.id, { action: "getScrollPosition" }, async (response) => {
-        // If content script doesn't respond (e.g., on a chrome:// page), default to 0
-        const scrollPos = response ? response.scrollPos : 0;
+        
+        if (chrome.runtime.lastError) {
+          console.log("Content script not found. Defaulting to 0.");
+        }
+
+        // Fix the zero-falsy bug: Safely grab 0% if we are at the top
+        const scrollPos = (response && response.scrollPos !== undefined) ? response.scrollPos : 0;
 
         try {
           const apiRes = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', // <-- MAGIC KEY HERE TOO
             body: JSON.stringify({
               url: currentTab.url,
               category_id: categoryId,
-              scroll_pos: scrollPos // Sending the real number now!
+              scroll_pos: scrollPos
             })
           });
 

@@ -63,3 +63,18 @@ export async function addGrain(formData: FormData) {
   }
   revalidatePath('/dashboard');
 }
+
+export async function deleteGrain(grainId: string) {
+  const supabase = await createClient();
+  
+  const { error } = await supabase
+    .from('grains')
+    .delete()
+    .eq('id', grainId);
+
+  if (error) {
+    console.error("Failed to delete grain:", error.message);
+  }
+  
+  revalidatePath('/dashboard');
+}

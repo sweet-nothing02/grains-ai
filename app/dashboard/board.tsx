@@ -1,9 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/browser"; // Make sure we use the browser client here!
 import { updateGrainCategory } from "./actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { deleteGrain } from "./actions"; // Import deleteGrain!
 
-// FIX 1: Default props to empty arrays so the app never crashes if data is null
 export default function Board({
   grains = [],
   categories = [],
@@ -11,7 +14,38 @@ export default function Board({
   grains: any[];
   categories: any[];
 }) {
+  const router = useRouter();
   const allColumns = [{ id: null, name: "Uncategorized" }, ...categories];
+
+  // --- NEW: REALTIME WEBSOCKET SUBSCRIPTION ---
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Create a channel to listen to the 'grains' table
+    const channel = supabase
+      .channel("realtime-grains")
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // Listen for INSERT, UPDATE, and DELETE
+          schema: "public",
+          table: "grains",
+        },
+        (payload) => {
+          console.log("[Grains] Realtime update received!", payload);
+          // router.refresh() quietly updates the Server Components in the background
+          // without losing your client-side state or forcing a hard reload.
+          router.refresh();
+        },
+      )
+      .subscribe();
+
+    // Cleanup the subscription when you leave the dashboard
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [router]);
+  // ---------------------------------------------
 
   const handleDragStart = (e: React.DragEvent, grainId: string) => {
     e.dataTransfer.setData("grainId", grainId);
@@ -20,15 +54,11 @@ export default function Board({
   const handleDrop = async (e: React.DragEvent, categoryId: string | null) => {
     e.preventDefault();
     const grainId = e.dataTransfer.getData("grainId");
-
-    if (!grainId) return; // Safeguard
-
-    // Move the grain in the database
+    if (!grainId) return;
     await updateGrainCategory(grainId, categoryId);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
-    // FIX 2: This is strictly required for the drop event to fire
     e.preventDefault();
   };
 
@@ -41,7 +71,7 @@ export default function Board({
     try {
       const urlObj = new URL(originalUrl);
       urlObj.searchParams.set("g_scroll", scrollPos.toString());
-      urlObj.searchParams.set("g_id", grainId); // Pass the ID!
+      urlObj.searchParams.set("g_id", grainId);
       return urlObj.toString();
     } catch (e) {
       return originalUrl;
@@ -74,8 +104,21 @@ export default function Board({
                 onDragStart={(e) => handleDragStart(e, grain.id)}
                 className="cursor-grab active:cursor-grabbing"
               >
-                <Card className="hover:border-primary/50 transition-colors overflow-hidden">
-                  {/* FIX 3: Display the scraped image! */}
+                {/* Notice the 'group' class added here to track hover state */}
+                <Card className="hover:border-primary/50 transition-colors overflow-hidden relative group">
+                  {/* --- NEW: The Delete Button --- */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevents dragging when clicking delete
+                      deleteGrain(grain.id);
+                    }}
+                    className="absolute top-2 right-2 z-10 w-6 h-6 bg-background/80 hover:bg-destructive hover:text-destructive-foreground rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                    title="Delete Grain"
+                  >
+                    ✕
+                  </button>
+                  {/* ----------------------------- */}
+
                   {grain.image_url && (
                     <div className="w-full h-32 bg-muted">
                       <img
@@ -84,14 +127,15 @@ export default function Board({
                         className="w-full h-full object-cover"
                         onError={(e) =>
                           (e.currentTarget.style.display = "none")
-                        } // Hide if image breaks
+                        }
                       />
                     </div>
                   )}
 
                   <CardHeader className="p-4 pb-2">
-                    <CardTitle className="text-sm line-clamp-2">
-                      {/* We check if the URL already has parameters (?) so we safely append with & or ? */}
+                    <CardTitle className="text-sm line-clamp-2 pr-4">
+                      {" "}
+                      {/* Added pr-4 so text doesn't overlap the X */}
                       <a
                         href={getScrollUrl(
                           grain.url,
@@ -111,7 +155,7 @@ export default function Board({
                     </p>
                     <div className="w-full bg-secondary h-1.5 rounded-full overflow-hidden">
                       <div
-                        className="bg-primary h-full"
+                        className="bg-primary h-full transition-all duration-500 ease-out"
                         style={{ width: `${grain.scroll_pos}%` }}
                       />
                     </div>
@@ -120,7 +164,6 @@ export default function Board({
               </div>
             ))}
 
-            {/* Visual dropzone helper */}
             {columnGrains.length === 0 && (
               <div className="text-xs text-center p-6 border-2 border-dashed border-muted-foreground/30 rounded-lg text-muted-foreground">
                 Drop grain here
