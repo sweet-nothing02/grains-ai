@@ -4,27 +4,15 @@
   <meta charset="UTF-8">
   <title>Save Grain</title>
   <style>
-    body { font-family: sans-serif; width: 300px; padding: 16px; margin: 0; background: #fff; color: #000; }
-    h2 { margin-top: 0; font-size: 16px; }
-    select, button { width: 100%; padding: 8px; margin-top: 10px; border-radius: 6px; border: 1px solid #ccc; }
-    button { background: #000; color: #fff; border: none; cursor: pointer; font-weight: bold; }
-    button:hover { background: #333; }
-    #status { margin-top: 10px; font-size: 12px; color: #666; text-align: center; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; width: 250px; padding: 16px; text-align: center; }
+    #save-btn { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #2563eb; color: #fff; cursor: pointer; font-weight: bold; font-size: 14px; }
+    #save-btn:hover { background: #1d4ed8; }
+    #status { margin-top: 12px; font-size: 13px; color: #64748b; }
   </style>
 </head>
 <body>
-  <h2>Save to Grains</h2>
-  <div id="auth-warning" style="display: none; color: red; font-size: 12px; margin-bottom: 10px;">
-    Please log in to the Grains web app first.
-  </div>
-  
-  <select id="category-select">
-    <option value="uncategorized">Loading categories...</option>
-  </select>
-
-  <button id="save-btn">Capture Grain</button>
+  <button id="save-btn">✨ AI Auto-Save</button>
   <div id="status"></div>
-
   <script src="popup.js"></script>
 </body>
 </html>

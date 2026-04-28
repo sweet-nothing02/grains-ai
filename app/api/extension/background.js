@@ -1,12 +1,10 @@
-// extension/background.js
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'autoSaveScroll') {
     
     fetch('http://localhost:3000/api/extension', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // <-- THIS IS THE MAGIC KEY FOR COOKIES
+      credentials: 'include',
       body: JSON.stringify(request.payload)
     })
     .then(async (res) => {
