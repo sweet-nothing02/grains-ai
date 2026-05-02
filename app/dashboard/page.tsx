@@ -30,14 +30,13 @@ export default async function Dashboard() {
   return (
     <div className="max-w-7xl mx-auto p-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Grains</h1>
+        <h1 className="text-3xl font-bold">GrainsAI</h1>
         <form action="/login">
           <Button variant="outline">Log Out</Button>
         </form>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-        {/* Create Category Form */}
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         <div className="p-6 border rounded-xl bg-card">
           <h2 className="font-semibold mb-4">1. Create a Category</h2>
           <form action={createCategory} className="flex gap-4">
@@ -48,7 +47,6 @@ export default async function Dashboard() {
           </form>
         </div>
 
-        {/* Create Grain Form (Now with dropdown!) */}
         <div className="p-6 border rounded-xl bg-card">
           <h2 className="font-semibold mb-4">2. Save a Link</h2>
           <form action={addGrain} className="flex gap-2">
@@ -73,7 +71,7 @@ export default async function Dashboard() {
             <Button type="submit">Save</Button>
           </form>
         </div>
-      </div>
+      </div> */}
 
       {/* The Drag and Drop Board */}
       <Board grains={grains || []} categories={categories || []} />
