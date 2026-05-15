@@ -58,7 +58,6 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 
 // --- AUTO-SAVE PROGRESS FEATURE ---
 
-const API_PATCH_URL = 'http://localhost:3000/api/extension';
 const urlParams = new URLSearchParams(window.location.search);
 const activeGrainId = urlParams.get('g_id');
 

@@ -1,7 +1,9 @@
+importScripts('config.js');
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'autoSaveScroll') {
     
-    fetch('http://localhost:3000/api/extension', {
+    fetch(API_URL, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api/extension';
+// API_URL is defined in config.js
 
 document.addEventListener('DOMContentLoaded', () => {
   const saveBtn = document.getElementById('save-btn');

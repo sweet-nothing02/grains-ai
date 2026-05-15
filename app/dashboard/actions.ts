@@ -102,7 +102,7 @@ export async function generateDeepSummary(grainId: string, url: string) {
 
     // 2. Heavy AI Generation
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.5-flash", 
+      model: process.env.GEMINI_MODEL || "gemini-3.1-flash-lite-preview", 
       generationConfig: { responseMimeType: "application/json" } 
     });
 
