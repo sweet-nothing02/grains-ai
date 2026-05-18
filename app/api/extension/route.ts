@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server';
 import * as cheerio from 'cheerio';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// GET: The extension calls this to get the user's categories
 export async function GET() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -12,7 +11,6 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized. Please log in to the web app." }, { status: 401 });
   }
 
-  // Fetch their categories
   const { data: categories } = await supabase
     .from('categories')
     .select('*')
@@ -23,7 +21,6 @@ export async function GET() {
 
 
 
-// Initialize the Gemini Client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function POST(req: Request) {
@@ -40,7 +37,6 @@ export async function POST(req: Request) {
     let imageUrl = null;
     let finalCategoryId = category_id === 'uncategorized' ? null : category_id;
 
-    // 1. FAST SCRAPE (Only metadata, no heavy content)
     try {
       const response = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
       if (response.ok) {
@@ -54,7 +50,6 @@ export async function POST(req: Request) {
       console.warn(`[Grains] Fast scrape failed for ${url}`);
     }
 
-    // 2. LIGHTNING AI CATEGORIZATION (Only runs if uncategorized)
     if (category_id === 'uncategorized') {
       try {
         const model = genAI.getGenerativeModel({ 
@@ -75,7 +70,6 @@ export async function POST(req: Request) {
           "Politics & Law", "Miscellaneous"
         ];
 
-        // Tiny prompt = fast response
         const prompt = `
           Analyze this:
           Title: ${title}
@@ -111,12 +105,11 @@ export async function POST(req: Request) {
       }
     }
 
-    // 3. INSTANT SAVE
     const { error } = await supabase.from('grains').insert({
       user_id: user.id,
       url: url,
       title: title,
-      summary: description, // Temporarily save description as the summary
+      summary: description,
       scroll_pos: scroll_pos || 0,
       image_url: imageUrl,
       category_id: finalCategoryId
@@ -129,7 +122,6 @@ export async function POST(req: Request) {
   }
 }
 
-// PATCH: The extension calls this to silently update the scroll position
 export async function PATCH(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -145,7 +137,7 @@ export async function PATCH(req: Request) {
       .from('grains')
       .update({ scroll_pos })
       .eq('id', grain_id)
-      .eq('user_id', user.id); // Extra security check
+      .eq('user_id', user.id);
 
     if (error) throw error;
 

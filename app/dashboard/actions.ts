@@ -33,7 +33,7 @@ export async function updateGrainCategory(grainId: string, categoryId: string | 
 
 export async function addGrain(formData: FormData) {
   const url = formData.get('url') as string;
-  const categoryId = formData.get('category_id') as string; // NEW
+  const categoryId = formData.get('category_id') as string;
   if (!url) return;
 
   const supabase = await createClient();
@@ -56,7 +56,7 @@ export async function addGrain(formData: FormData) {
       summary: description,
       scroll_pos: 0, 
       image_url: imageUrl,
-      category_id: categoryId === 'uncategorized' ? null : categoryId // NEW
+      category_id: categoryId === 'uncategorized' ? null : categoryId
     });
 
   } catch (error) {
@@ -81,14 +81,12 @@ export async function deleteGrain(grainId: string) {
 }
 
 
-// Initialize Gemini for the Server Action
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function generateDeepSummary(grainId: string, url: string) {
   const supabase = await createClient();
   
   try {
-    // 1. Heavy Scrape
     const response = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
     if (!response.ok) throw new Error("Could not fetch page");
     
@@ -100,14 +98,14 @@ export async function generateDeepSummary(grainId: string, url: string) {
     });
     pageContent = pageContent.substring(0, 5000).trim();
 
-    // 2. Heavy AI Generation
     const model = genAI.getGenerativeModel({ 
       model: process.env.GEMINI_MODEL || "gemini-3.1-flash-lite-preview", 
       generationConfig: { responseMimeType: "application/json" } 
     });
 
     const prompt = `
-      Write a comprehensive summary (250-300 words) of the following content. Focus on core value and key takeaways.
+      Write a comprehensive summary (250-300 words) of the following content. 
+      Focus on core value and key takeaways.
       CRITICAL: The summary MUST be written in the exact same language as the source text.
       Source Text: ${pageContent}
       Respond ONLY with JSON: {"summary": "..."}
@@ -118,7 +116,6 @@ export async function generateDeepSummary(grainId: string, url: string) {
 
     if (!aiResponse.summary) throw new Error("AI returned empty summary");
 
-    // 3. Update Database
     const { error } = await supabase
       .from('grains')
       .update({ summary: aiResponse.summary })

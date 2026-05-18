@@ -14,7 +14,6 @@ import { Sparkles, Mail, Lock, UserPlus, LogIn } from "lucide-react";
 export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-background via-background to-secondary/30 flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Decorative Glow Elements */}
       <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-secondary/20 blur-[120px] rounded-full pointer-events-none" />
 

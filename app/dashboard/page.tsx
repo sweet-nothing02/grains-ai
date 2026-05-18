@@ -1,4 +1,3 @@
-// app/dashboard/page.tsx
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,6 @@ export default async function Dashboard() {
 
   if (authError || !user) redirect("/login");
 
-  // Fetch Grains AND Categories in parallel
   const [{ data: grains }, { data: categories }] = await Promise.all([
     supabase
       .from("grains")
@@ -56,7 +54,6 @@ export default async function Dashboard() {
           </div>
         </header>
 
-        {/* The Drag and Drop Board */}
         <Board grains={grains || []} categories={categories || []} />
       </div>
     </div>

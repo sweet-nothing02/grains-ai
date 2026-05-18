@@ -36,7 +36,6 @@ export default function Board({
 }) {
   const router = useRouter();
 
-  // UI State
   const [selectedGrain, setSelectedGrain] = useState<any | null>(null);
   const [generatingIds, setGeneratingIds] = useState<string[]>([]);
   const [collapsedCategories, setCollapsedCategories] = useState<
@@ -46,7 +45,6 @@ export default function Board({
   const [searchQuery, setSearchQuery] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // 1. Load collapsed state from LocalStorage on mount
   useEffect(() => {
     const savedState = localStorage.getItem("grains_collapsed_state");
     if (savedState) setCollapsedCategories(JSON.parse(savedState));
@@ -69,7 +67,6 @@ export default function Board({
     };
   }, [router]);
 
-  // 2. Save collapsed state to LocalStorage when changed
   const toggleCategory = (categoryId: string) => {
     const newState = {
       ...collapsedCategories,
@@ -89,7 +86,6 @@ export default function Board({
     localStorage.setItem("grains_collapsed_state", JSON.stringify(newState));
   };
 
-  // 3. Sort Categories by the latest Grain added to them
   const sortedCategories = useMemo(() => {
     const allColumns = [
       { id: "uncategorized", name: "Uncategorized" },
@@ -104,7 +100,6 @@ export default function Board({
         (g) => (g.category_id || "uncategorized") === b.id,
       );
 
-      // Get the most recent created_at timestamp for each category
       const aLatest =
         aGrains.length > 0
           ? Math.max(
@@ -118,7 +113,7 @@ export default function Board({
             )
           : 0;
 
-      return bLatest - aLatest; // Descending order (newest first)
+      return bLatest - aLatest;
     });
   }, [grains, categories]);
 
@@ -138,7 +133,6 @@ export default function Board({
     return allIds.every((id) => collapsedCategories[id]);
   }, [collapsedCategories, categories]);
 
-  // Drag & Drop Handlers
   const handleDragStart = (e: React.DragEvent, grainId: string) => {
     e.dataTransfer.setData("grainId", grainId);
   };
@@ -194,7 +188,6 @@ export default function Board({
       >
         <Card className="h-full flex flex-col hover:border-primary/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative group bg-background/50 backdrop-blur-sm border-border/50">
           
-          {/* Inline Delete Confirmation */}
           <div
             className={`absolute inset-0 z-20 bg-background/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center transition-all duration-300 ${isConfirmingDelete ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}
           >
@@ -322,7 +315,6 @@ export default function Board({
     );
   };
 
-  // Prevent layout shift before localStorage loads
   if (!isLoaded)
     return (
       <div className="min-h-screen flex items-center justify-center text-muted-foreground animate-pulse font-medium">
@@ -332,7 +324,6 @@ export default function Board({
 
   return (
     <div className="max-w-7xl mx-auto pb-24 px-4 sm:px-6">
-      {/* TOOLBAR */}
       <div className="sticky top-4 z-40 mb-10 p-2 bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl shadow-xl flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[240px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -357,7 +348,6 @@ export default function Board({
             onClick={() => {
               const name = window.prompt("Enter new category name:");
               if (name) {
-                // You can wire this up to a server action
                 const form = new FormData();
                 form.append("name", name);
                 createCategory(form);
@@ -445,7 +435,6 @@ export default function Board({
                 onDrop={(e) => handleDrop(e, col.id)}
                 onDragOver={handleDragOver}
               >
-                {/* Row Header / Toggle */}
                 <div className="flex items-center justify-between mb-4 px-2">
                   <button
                     onClick={() => toggleCategory(col.id)}
@@ -477,7 +466,6 @@ export default function Board({
                   </div>
                 </div>
 
-                {/* Expandable Grid Container */}
                 <div
                   className={`transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${isCollapsed ? "grid-rows-[0fr] opacity-0 pointer-events-none" : "grid-rows-[1fr] opacity-100"}`}
                   style={{ display: "grid" }}
@@ -508,7 +496,6 @@ export default function Board({
         </div>
       )}
 
-      {/* THE POPUP MODAL (Enhanced styling) */}
       {selectedGrain && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/40 backdrop-blur-md animate-in fade-in duration-300"

@@ -1,4 +1,4 @@
-# 🌾 Grains AI
+# 🌾 [Grains AI](https://grains-ai.vercel.app/)
 
 **Grains AI** is a modern knowledge management tool designed to capture, organize, and track your reading progress across the web. Instead of letting your bookmarks become a "digital graveyard," Grains AI transforms them into active, organized knowledge.
 
@@ -16,21 +16,21 @@ The internet is overflowing with information, but saving a link isn't the same a
 
 ## ✨ Key Features
 
--   **Reading Progress Tracking:** Real-time synchronization of your scroll percentage.
--   **AI Categorization:** Automatic sorting into categories like *AI, Technology, Business, Science,* and more using Gemini 2.5 Flash.
--   **Deep Summaries:** Generate comprehensive AI summaries of any saved "grain" to refresh your memory.
--   **Real-time Dashboard:** Built with Supabase Realtime, your dashboard updates instantly as you save content via the extension.
--   **"Jump Back In":** Open any saved grain from your dashboard, and it will automatically scroll you back to your last read position.
+- **Reading Progress Tracking:** Real-time synchronization of your scroll percentage.
+- **AI Categorization:** Automatic sorting into categories like _AI, Technology, Business, Science,_ and more using Gemini 3.1 Flash Lite.
+- **Deep Summaries:** Generate comprehensive AI summaries of any saved "grain" to refresh your memory.
+- **Real-time Dashboard:** Built with Supabase Realtime, your dashboard updates instantly as you save content via the extension.
+- **"Jump Back In":** Open any saved grain from your dashboard, and it will automatically scroll you back to your last read position.
 
 ---
 
 ## 🛠️ Tech Stack
 
--   **Framework:** [Next.js 15+](https://nextjs.org/) (App Router)
--   **Backend & Auth:** [Supabase](https://supabase.com/)
--   **AI Engine:** [Google Gemini AI](https://ai.google.dev/) (2.5 Flash)
--   **Scraping:** [Cheerio](https://cheerio.js.org/)
--   **Styling:** Tailwind CSS + [Shadcn UI](https://ui.shadcn.com/)
+- **Framework:** [Next.js 15+](https://nextjs.org/) (App Router)
+- **Backend & Auth:** [Supabase](https://supabase.com/)
+- **AI Engine:** [Google Gemini AI](https://ai.google.dev/) (3.1 Flash Lite)
+- **Scraping:** [Cheerio](https://cheerio.js.org/)
+- **Styling:** Tailwind CSS + [Shadcn UI](https://ui.shadcn.com/)
 
 ---
 
@@ -44,16 +44,16 @@ Since the **Grains Collector** extension is currently in development and not yet
 4.  In the file picker, navigate to your local `grains-ai` project folder and select the directory:
     `app/api/extension/`
 5.  The **Grains Collector** icon should now appear in your extension bar.
-6.  *Note: Make sure you are logged into the Grains AI web app before saving your first grain!*
+6.  _Note: Make sure you are logged into the Grains AI web app before saving your first grain!_
 
 ---
 
 ## 🚀 Deployment
 
-This application is designed to be deployed on **Vercel** with a **Supabase** backend. 
+This application is deployed on **Vercel** with a **Supabase** backend. It is available on `https://grains-ai.vercel.app/`
 
--   The web app handles authentication and the dashboard.
--   The Chrome extension communicates with the `/api/extension` route to save and update your progress.
+- The web app handles authentication and the dashboard.
+- The Chrome extension communicates with the `/api/extension` route to save and update your progress.
 
 ---
 

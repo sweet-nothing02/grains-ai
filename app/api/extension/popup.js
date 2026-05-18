@@ -1,5 +1,3 @@
-// API_URL is defined in config.js
-
 document.addEventListener('DOMContentLoaded', () => {
   const saveBtn = document.getElementById('save-btn');
   const status = document.getElementById('status');
@@ -21,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
             credentials: 'include',
             body: JSON.stringify({
               url: currentTab.url,
-              category_id: 'uncategorized', // Hardcode this so AI always categorizes
+              category_id: 'uncategorized',
               scroll_pos: scrollPos
             })
           });
